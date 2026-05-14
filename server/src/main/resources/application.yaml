@@ -1,0 +1,18 @@
+ktor:
+  deployment:
+    port: "$PORT:8080"
+  application:
+    modules:
+      - com.recipebook.ApplicationKt.module
+
+database:
+  url: $DATABASE_URL
+  driver: org.postgresql.Driver
+  maxPoolSize: "$DB_POOL_SIZE:5"
+
+firebase:
+  credentialsPath: "$FIREBASE_CREDENTIALS_PATH:firebase-service-account.json"
+
+app:
+  baseUrl: "$BASE_URL:http://localhost:8080"
+  apiPrefix: /api/v1
