@@ -16,10 +16,11 @@ fun Application.configureRouting() {
         route("/api/v1") {
             ingredientRoutes()
             tagRoutes()
+            recipePublicRoutes()
 
             authenticate("firebase") {
                 userRoutes()
-                recipeRoutes()
+                recipeAuthRoutes()
                 favoriteRoutes()
                 commentRoutes()
                 ratingRoutes()

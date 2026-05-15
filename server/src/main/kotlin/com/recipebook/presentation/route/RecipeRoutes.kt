@@ -12,14 +12,9 @@ import io.ktor.server.routing.*
 import org.koin.core.context.GlobalContext
 import java.util.UUID
 
-fun Route.recipeRoutes() {
+fun Route.recipePublicRoutes() {
     val getRecipes = GlobalContext.get().get<GetRecipesUseCase>()
     val getRecipeById = GlobalContext.get().get<GetRecipeByIdUseCase>()
-    val getMyRecipes = GlobalContext.get().get<GetMyRecipesUseCase>()
-    val createRecipe = GlobalContext.get().get<CreateRecipeUseCase>()
-    val updateRecipe = GlobalContext.get().get<UpdateRecipeUseCase>()
-    val deleteRecipe = GlobalContext.get().get<DeleteRecipeUseCase>()
-    val publishRecipe = GlobalContext.get().get<PublishRecipeUseCase>()
 
     route("/recipes") {
         get {
@@ -31,18 +26,28 @@ fun Route.recipeRoutes() {
             call.respond(RecipePageResponse(result.items.map { it.toResponse() }, result.total, result.page, result.size))
         }
 
+        get("/{id}") {
+            val id = UUID.fromString(call.parameters["id"]!!)
+            val recipe = getRecipeById(id)
+            call.respond(recipe.toResponse())
+        }
+    }
+}
+
+fun Route.recipeAuthRoutes() {
+    val getMyRecipes = GlobalContext.get().get<GetMyRecipesUseCase>()
+    val createRecipe = GlobalContext.get().get<CreateRecipeUseCase>()
+    val updateRecipe = GlobalContext.get().get<UpdateRecipeUseCase>()
+    val deleteRecipe = GlobalContext.get().get<DeleteRecipeUseCase>()
+    val publishRecipe = GlobalContext.get().get<PublishRecipeUseCase>()
+
+    route("/recipes") {
         get("/my") {
             val principal = call.principal<FirebasePrincipal>()!!
             val page = call.parameters["page"]?.toIntOrNull() ?: 0
             val size = call.parameters["size"]?.toIntOrNull() ?: 20
             val result = getMyRecipes(principal.userId, page, size)
             call.respond(RecipePageResponse(result.items.map { it.toResponse() }, result.total, result.page, result.size))
-        }
-
-        get("/{id}") {
-            val id = UUID.fromString(call.parameters["id"]!!)
-            val recipe = getRecipeById(id)
-            call.respond(recipe.toResponse())
         }
 
         post {
