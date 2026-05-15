@@ -2,9 +2,12 @@ package com.recipebook.application.plugin
 
 import io.ktor.http.*
 import io.ktor.server.application.*
+import io.ktor.server.plugins.calllogging.*
 import io.ktor.server.plugins.compression.*
 import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.plugins.defaultheaders.*
+import io.ktor.server.request.*
+import org.slf4j.event.Level
 
 fun Application.configureHTTP() {
     install(CORS) {
@@ -18,4 +21,8 @@ fun Application.configureHTTP() {
     }
     install(Compression)
     install(DefaultHeaders)
+    install(CallLogging) {
+        level = Level.INFO
+        filter { call -> call.request.path().startsWith("/api") }
+    }
 }

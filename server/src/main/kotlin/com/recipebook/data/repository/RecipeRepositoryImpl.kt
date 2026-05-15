@@ -131,13 +131,15 @@ class RecipeRepositoryImpl : RecipeRepository {
             .count()
     }
 
-    override suspend fun findById(id: UUID): Recipe? = dbQuery {
+    private fun fetchById(id: UUID): Recipe? {
         val row = RecipesTable.selectAll()
             .where { RecipesTable.id eq id }
-            .singleOrNull() ?: return@dbQuery null
+            .singleOrNull() ?: return null
         val relations = loadRelations(listOf(id))
-        toRecipe(row, relations[id] ?: Triple(emptyList(), emptyList(), emptyList()))
+        return toRecipe(row, relations[id] ?: Triple(emptyList(), emptyList(), emptyList()))
     }
+
+    override suspend fun findById(id: UUID): Recipe? = dbQuery { fetchById(id) }
 
     override suspend fun findByAuthorId(authorId: UUID, page: Int, size: Int): List<Recipe> = dbQuery {
         val rows = RecipesTable.selectAll()
@@ -178,7 +180,7 @@ class RecipeRepositoryImpl : RecipeRepository {
             it[RecipesTable.createdAt] = Clock.System.now()
         }
         saveRelations(id, recipe.ingredientIds, recipe.tagIds, recipe.steps)
-        findById(id)!!
+        fetchById(id)!!
     }
 
     override suspend fun update(id: UUID, recipe: UpdateRecipeData): Recipe = dbQuery {
@@ -199,7 +201,7 @@ class RecipeRepositoryImpl : RecipeRepository {
         RecipeTagsTable.deleteWhere { RecipeTagsTable.recipeId eq id }
         StepsTable.deleteWhere { StepsTable.recipeId eq id }
         saveRelations(id, recipe.ingredientIds, recipe.tagIds, recipe.steps)
-        findById(id)!!
+        fetchById(id)!!
     }
 
     override suspend fun delete(id: UUID): Unit = dbQuery {
@@ -210,7 +212,7 @@ class RecipeRepositoryImpl : RecipeRepository {
         RecipesTable.update({ RecipesTable.id eq id }) {
             it[RecipesTable.isPublished] = true
         }
-        findById(id)!!
+        fetchById(id)!!
     }
 
     private fun saveRelations(
