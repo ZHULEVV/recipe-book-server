@@ -15,15 +15,25 @@ object DatabaseFactory {
         Database.connect(dataSource)
     }
 
-    private fun buildDataSource(url: String, driver: String, maxPoolSize: Int): DataSource =
-        HikariDataSource(HikariConfig().apply {
-            jdbcUrl = url
+    private fun buildDataSource(url: String, driver: String, maxPoolSize: Int): DataSource {
+        val normalized = if (url.startsWith("jdbc:")) url else "jdbc:$url"
+        val credentialsRegex = Regex("(jdbc:postgresql://)([^:@]+):([^@]+)@(.+)")
+        val match = credentialsRegex.matchEntire(normalized)
+        return HikariDataSource(HikariConfig().apply {
+            if (match != null) {
+                jdbcUrl = "${match.groupValues[1]}${match.groupValues[4]}"
+                username = match.groupValues[2]
+                password = match.groupValues[3]
+            } else {
+                jdbcUrl = normalized
+            }
             driverClassName = driver
             maximumPoolSize = maxPoolSize
             isAutoCommit = false
             transactionIsolation = "TRANSACTION_REPEATABLE_READ"
             validate()
         })
+    }
 
     private fun runMigrations(dataSource: DataSource) {
         Flyway.configure()
