@@ -20,7 +20,6 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 USER appuser
 
 COPY --from=builder /app/server/build/libs/*-all.jar app.jar
-COPY firebase-service-account.json firebase-service-account.json
 
 EXPOSE 8080
 
