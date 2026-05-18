@@ -19,6 +19,7 @@ val useCaseModule = module {
     single { RemoveExcludedIngredientUseCase(get()) }
 
     single { GetRecipesUseCase(get()) }
+    single { SearchRecipesUseCase(get()) }
     single { GetRecipeByIdUseCase(get()) }
     single { GetMyRecipesUseCase(get()) }
     single { CreateRecipeUseCase(get()) }

@@ -131,6 +131,32 @@ class RecipeRepositoryImpl : RecipeRepository {
             .count()
     }
 
+    override suspend fun search(query: String, page: Int, size: Int): List<Recipe> = dbQuery {
+        val rows = RecipesTable.selectAll()
+            .where {
+                (RecipesTable.isPublished eq true) and
+                (RecipesTable.title.lowerCase() like "%${query.lowercase()}%")
+            }
+            .orderBy(RecipesTable.createdAt, SortOrder.DESC)
+            .limit(size).offset(page.toLong() * size)
+            .toList()
+        val recipeIds = rows.map { it[RecipesTable.id] }
+        val relations = loadRelations(recipeIds)
+        rows.map { row ->
+            val id = row[RecipesTable.id]
+            toRecipe(row, relations[id] ?: Triple(emptyList(), emptyList(), emptyList()))
+        }
+    }
+
+    override suspend fun countSearch(query: String): Long = dbQuery {
+        RecipesTable.selectAll()
+            .where {
+                (RecipesTable.isPublished eq true) and
+                (RecipesTable.title.lowerCase() like "%${query.lowercase()}%")
+            }
+            .count()
+    }
+
     private fun fetchById(id: UUID): Recipe? {
         val row = RecipesTable.selectAll()
             .where { RecipesTable.id eq id }

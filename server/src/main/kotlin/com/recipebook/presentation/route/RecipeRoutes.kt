@@ -14,6 +14,7 @@ import java.util.UUID
 
 fun Route.recipePublicRoutes() {
     val getRecipes = GlobalContext.get().get<GetRecipesUseCase>()
+    val searchRecipes = GlobalContext.get().get<SearchRecipesUseCase>()
     val getRecipeById = GlobalContext.get().get<GetRecipeByIdUseCase>()
 
     route("/recipes") {
@@ -23,6 +24,14 @@ fun Route.recipePublicRoutes() {
             val difficulty = call.parameters["difficulty"]?.let { runCatching { Difficulty.valueOf(it) }.getOrNull() }
             val tagIds = call.parameters.getAll("tagId")?.mapNotNull { runCatching { UUID.fromString(it) }.getOrNull() } ?: emptyList()
             val result = getRecipes(page, size, difficulty, tagIds)
+            call.respond(RecipePageResponse(result.items.map { it.toResponse() }, result.total, result.page, result.size))
+        }
+
+        get("/search") {
+            val query = call.parameters["query"] ?: ""
+            val page = call.parameters["page"]?.toIntOrNull() ?: 0
+            val size = call.parameters["size"]?.toIntOrNull() ?: 20
+            val result = searchRecipes(query, page, size)
             call.respond(RecipePageResponse(result.items.map { it.toResponse() }, result.total, result.page, result.size))
         }
 

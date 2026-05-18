@@ -7,6 +7,8 @@ import java.util.UUID
 interface RecipeRepository {
     suspend fun findAll(page: Int, size: Int, difficulty: Difficulty?, tagIds: List<UUID>): List<Recipe>
     suspend fun count(difficulty: Difficulty?, tagIds: List<UUID>): Long
+    suspend fun search(query: String, page: Int, size: Int): List<Recipe>
+    suspend fun countSearch(query: String): Long
     suspend fun findById(id: UUID): Recipe?
     suspend fun findByAuthorId(authorId: UUID, page: Int, size: Int): List<Recipe>
     suspend fun countByAuthorId(authorId: UUID): Long
