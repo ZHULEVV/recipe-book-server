@@ -25,6 +25,7 @@ dependencies {
     implementation(libs.ktor.server.compression)
     implementation(libs.ktor.server.request.validation)
     implementation(libs.ktor.server.config.yaml)
+    implementation(libs.ktor.server.partial.content)
 
     implementation(libs.exposed.core)
     implementation(libs.exposed.dao)
