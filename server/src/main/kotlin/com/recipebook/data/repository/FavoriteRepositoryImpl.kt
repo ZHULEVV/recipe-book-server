@@ -13,15 +13,16 @@ class FavoriteRepositoryImpl(
     private val recipeRepositoryImpl: RecipeRepositoryImpl
 ) : FavoriteRepository {
 
-    override suspend fun findByUserId(userId: UUID, page: Int, size: Int): List<Recipe> = dbQuery {
-        val recipeIds = FavoritesTable.selectAll()
-            .where { FavoritesTable.userId eq userId }
-            .orderBy(FavoritesTable.addedAt, SortOrder.DESC)
-            .limit(size).offset(page.toLong() * size)
-            .map { it[FavoritesTable.recipeId] }
-
-        if (recipeIds.isEmpty()) return@dbQuery emptyList()
-        recipeRepositoryImpl.findByIds(recipeIds)
+    override suspend fun findByUserId(userId: UUID, page: Int, size: Int): List<Recipe> {
+        val recipeIds = dbQuery {
+            FavoritesTable.selectAll()
+                .where { FavoritesTable.userId eq userId }
+                .orderBy(FavoritesTable.addedAt, SortOrder.DESC)
+                .limit(size).offset(page.toLong() * size)
+                .map { it[FavoritesTable.recipeId] }
+        }
+        if (recipeIds.isEmpty()) return emptyList()
+        return recipeRepositoryImpl.findByIds(recipeIds)
     }
 
     override suspend fun count(userId: UUID): Long = dbQuery {
