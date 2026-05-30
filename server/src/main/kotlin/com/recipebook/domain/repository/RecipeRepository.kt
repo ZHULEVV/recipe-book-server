@@ -10,6 +10,7 @@ interface RecipeRepository {
     suspend fun search(query: String, page: Int, size: Int): List<Recipe>
     suspend fun countSearch(query: String): Long
     suspend fun findById(id: UUID): Recipe?
+    suspend fun findByIds(ids: List<UUID>): List<Recipe>
     suspend fun findByAuthorId(authorId: UUID, page: Int, size: Int): List<Recipe>
     suspend fun countByAuthorId(authorId: UUID): Long
     suspend fun create(recipe: CreateRecipeData): Recipe

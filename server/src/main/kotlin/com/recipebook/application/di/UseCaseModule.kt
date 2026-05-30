@@ -41,6 +41,7 @@ val useCaseModule = module {
     single { GetMealPlanUseCase(get()) }
     single { AddMealPlanEntryUseCase(get(), get()) }
     single { DeleteMealPlanEntryUseCase(get()) }
+    single { GetShoppingListUseCase(get(), get()) }
 
     single { GetIngredientsUseCase(get()) }
     single { CreateIngredientUseCase(get()) }

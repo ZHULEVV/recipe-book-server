@@ -85,12 +85,13 @@ class RecipeRepositoryImpl : RecipeRepository {
         steps = relations.third
     )
 
-    fun findByIds(ids: List<UUID>): List<Recipe> {
+    override suspend fun findByIds(ids: List<UUID>): List<Recipe> = dbQuery {
+        if (ids.isEmpty()) return@dbQuery emptyList()
         val rows = RecipesTable.selectAll()
             .where { RecipesTable.id inList ids }
             .toList()
         val relations = loadRelations(ids)
-        return rows.map { row ->
+        rows.map { row ->
             val id = row[RecipesTable.id]
             toRecipe(row, relations[id] ?: Triple(emptyList(), emptyList(), emptyList()))
         }

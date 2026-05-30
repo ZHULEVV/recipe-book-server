@@ -9,14 +9,23 @@ import io.ktor.server.auth.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.serialization.Serializable
 import org.koin.core.context.GlobalContext
 import java.time.LocalDate
 import java.util.UUID
+
+@Serializable
+data class ShoppingListItemResponse(
+    val ingredientName: String,
+    val totalAmount: Double,
+    val unit: String
+)
 
 fun Route.mealPlanRoutes() {
     val getMealPlan = GlobalContext.get().get<GetMealPlanUseCase>()
     val addEntry = GlobalContext.get().get<AddMealPlanEntryUseCase>()
     val deleteEntry = GlobalContext.get().get<DeleteMealPlanEntryUseCase>()
+    val getShoppingList = GlobalContext.get().get<GetShoppingListUseCase>()
 
     route("/meal-plan") {
         get {
@@ -44,6 +53,16 @@ fun Route.mealPlanRoutes() {
             val id = UUID.fromString(call.parameters["id"]!!)
             deleteEntry(id, principal.userId)
             call.respond(HttpStatusCode.NoContent)
+        }
+    }
+
+    route("/shopping-list") {
+        get {
+            val principal = call.principal<FirebasePrincipal>()!!
+            val from = LocalDate.parse(call.parameters["from"] ?: LocalDate.now().toString())
+            val to = LocalDate.parse(call.parameters["to"] ?: LocalDate.now().plusDays(6).toString())
+            val items = getShoppingList(principal.userId, from, to)
+            call.respond(items.map { ShoppingListItemResponse(it.ingredientName, it.totalAmount, it.unit) })
         }
     }
 }
